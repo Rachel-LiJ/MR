@@ -1,5 +1,4 @@
 rm(list = ls())
-setwd("/Users/lijingli/data/lq/MR")
 library(dplyr)
 library(data.table)
 library(vroom)
@@ -14,7 +13,7 @@ library(MREILLS)
 
 
 #DR
-AD_exposure_finn = fread("~/data/MR/GWAS/AD/GCST007320_GRCh37.tsv")
+AD_exposure_finn = fread("GCST007320_GRCh37.tsv")
 head(AD_exposure_finn)
 colnames(AD_exposure_finn)
 AD_exposure_finn <- subset(AD_exposure_finn,p_value< 5e-08)
@@ -62,7 +61,7 @@ save(AD_exposure_dat_clumped,file = "Results/Rdata/AD.Rdata")
 
 
 #结局----
-outcome_finn = fread("~/data/MR/GWAS/DR/GCST90479891.tsv.gz")
+outcome_finn = fread("GCST90479891.tsv.gz")
 colnames(outcome_finn)
 outcome_finn_dat = subset(outcome_finn, outcome_finn$rsid %in% AD_exposure_dat_clumped$SNP)
 dim(outcome_finn_dat)# 24 13
@@ -125,13 +124,6 @@ presso = mr_presso(BetaOutcome ="beta.outcome",
                    NbDistribution = 3000,
                    SignifThreshold = 0.05)
 presso$`MR-PRESSO results`$`Distortion Test`$`Outliers Indices` #如果显示NULL，则表示不存在异常值
-mr_data_cleDR= mr_data_finn
-mr_data_cleDR = mr_data_finn[-c(49),]
-mr_data_cleDR=mr_data_cleDR[!mr_data_cleDR$SNP %in% c("rs12972970"),]
-#mr_data_cleDR = mr_data_finn
-#去除离群值
-#rs = sin$SNP[sin$b < -3|sin$b > 3] #找到离群的SNP
-#mr_data_cleDR = mr_data_finn[!mr_data_finn$SNP %in% rs,] #从原始数据框中移除这些SNP
 
 het_cleDR = mr_heterogeneity(mr_data_cleDR) #异质性检验
 het_cleDR

@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("/Users/lijingli/data/MR")
+
 library(dplyr)
 library(data.table)
 library(vroom)
@@ -12,10 +12,8 @@ library(MRPRESSO)
 library(LDlinkR)
 library(MREILLS)
 
-source("function.R")
-
 #DR
-DR_exposure_finn = fread("~/data/MR/GWAS/DR/GCST90479891.tsv.gz")
+DR_exposure_finn = fread("GCST90479891.tsv.gz")
 DR_exposure_finn$standard_error = abs(log(DR_exposure_finn$odds_ratio) / qnorm(DR_exposure_finn$p_value / 2))
 DR_exposure_finn$Z =  log(DR_exposure_finn$odds_ratio) / DR_exposure_finn$standard_error
 DR_exposure_finn$beta <- log(DR_exposure_finn$odds_ratio)
@@ -67,74 +65,8 @@ dim(DR_exposure_dat_clumped)#24 14
 write.csv(DR_exposure_dat_clumped,file = "Results/DR_exposure_dat_clumped_ALL.csv")
 save(DR_exposure_dat_clumped,file = "Results/Rdata/DR_ALL.Rdata")
 
-data<-LDtrait(
-  DR_exposure_dat_f$SNP,#	
-  #between 1 - 50 variants, using an rsID or chromosome coordinate (e.g. "chr7:24966446"). All input variants must match a bi-allelic variant.
-  pop = "EUR",#人群，可以使用list_pop()查看支持人群缩写
-  r2d = "r2",#	
-  #use "r2" to filter desired output from a threshold based on estimated LD R2 (R squared) or "d" for LD D' (D-prime), default = "r2".
-  r2d_threshold = 0.1,#筛选阈值，小的将被筛除
-  win_size = 5e+05,
-  token = "76d9a4a9589a",#输入邮箱获得token
-  file = FALSE,
-  genome_build = "grch38",#在三个选项中任选其一…'grch37'用于基因组构建grch37 (hg19)， 'grch38'用于grch38 (hg38)， 'grch38_high_coverage'用于grch38 High Coverage (hg38) 1000基因组计划数据集。默认为GRCh37 (hg19)。
-  api_root = "https://ldlink.nih.gov/LDlinkRest"
-)
-
-trait <- c(
-  # Alzheimer’s disease & dementia
-  "Alzheimer", "Dementia", "Cognitive", "Memory", "Neurodegenerative", 
-  
-  # Diabetic retinopathy & eye diseases
-  "Diabetic retinopathy", "Macular", "Retina", "Glaucoma", "Ophthalm", "Optic",
-  
-  # Lipid metabolism
-  "LDL", "HDL", "Triglyceride", "Cholesterol", "Lipid", "Apolipoprotein", 
-  
-  # Inflammation & immune response
-  "Inflammation", "C-reactive protein", "Cytokine", "IL-6", "IL6", "TNF", "Immune",
-  
-  # Cardiometabolic risk
-  "Type 2 diabetes", "Diabetes", "HbA1c", "Insulin", "Obesity", "BMI", "Blood pressure",
-  
-  # Stroke & vascular
-  "Stroke", "Myocardial infarction", "Coronary artery", "Atherosclerosis",
-  
-  # Other possible confounders
-  "Smoking", "Alcohol", "Education", "Depression", "Sleep", "Physical activity"
-)
-
-tcL<-function(snps,trait){
-  as=LDtrait(
-    snps=snps,
-    pop = "ALL",
-    r2d = "r2",
-    r2d_threshold = 0.1,
-    win_size = 5e+05,
-    token = "76d9a4a9589a",
-    file = FALSE,
-    genome_build = "grch38",
-    api_root = "https://ldlink.nih.gov/LDlinkRest")
-  #去除含有trait特征的SNP
-  # 直接匹配多个关键词（忽略大小写）
-  
-  pattern <- paste(trait, collapse = "|")
-  match_index <- str_detect(as[,"GWAS_Trait"], regex(pattern, ignore_case = TRUE))
-  
-  if (any(match_index)) {
-    matched_snps <- unique(as[match_index, "Query"])
-    filtered_snps <- snps[!(snps %in% matched_snps)]
-  } else {
-    filtered_snps <- snps
-  }
-  
-  return(filtered_snps)
-}
-
-snp<-tcL(DR_exposure_dat_clumped$SNP,trait)
-
 #结局----
-outcome_finn = fread("~/data/MR/GWAS/AD/GCST007320_GRCh37.tsv")
+outcome_finn = fread("GCST007320_GRCh37.tsv")
 colnames(outcome_finn)
 outcome_finn_dat = subset(outcome_finn, outcome_finn$variant_id %in% DR_exposure_dat_clumped$SNP)
 dim(outcome_finn_dat)# 24 13
@@ -192,13 +124,6 @@ presso = mr_presso(BetaOutcome ="beta.outcome",
                    NbDistribution = 3000,
                    SignifThreshold = 0.05)
 presso$`MR-PRESSO results`$`Distortion Test`$`Outliers Indices` #如果显示NULL，则表示不存在异常值
-mr_data_cleDR= mr_data_finn
-mr_data_cleDR = mr_data_finn[-c(44),]
-mr_data_cleDR=mr_data_cleDR[!mr_data_cleDR$SNP %in% c("rs7903146"),]
-#mr_data_cleDR = mr_data_finn
-#去除离群值
-#rs = sin$SNP[sin$b < -3|sin$b > 3] #找到离群的SNP
-#mr_data_cleDR = mr_data_finn[!mr_data_finn$SNP %in% rs,] #从原始数据框中移除这些SNP
 
 het_cleDR = mr_heterogeneity(mr_data_cleDR) #异质性检验
 het_cleDR

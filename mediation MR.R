@@ -17,9 +17,9 @@ setwd("/Users/lijingli/data/MR")
 ########################################
 #暴露—中介两样本MR
 ########################################
-exposure_dat_clumped<-read.csv("DR_AD_Results/DR_exposure_dat_clumped.csv")
+exposure_dat_clumped<-read.csv("DR_exposure_dat_clumped.csv")
 exposure_dat_clumped$id.exposure="DR"
-outcome_finn = fread("~/data/MR/GWAS/AD/GCST007320_GRCh37.tsv")
+outcome_finn = fread("GCST007320_GRCh37.tsv")
 
 #ieu-b-110 LDL 440546	
 #ieu-b-109 HDL 403943 ebi-a-GCST90025956 	400754
@@ -174,7 +174,7 @@ write.csv(res_mi_MY, "mediation/result/MRresult_MY_HbA1c.csv")
 ##########################################
 #计算中介效应
 ##########################################
-res_XY<-read.csv("~/data/MR/Results/MRresult_DR_AD_E.csv")
+res_XY<-read.csv("Results/MRresult_DR_AD_E.csv")
 all_beta = res_XY[3,8]  #提取暴露与结局的总效应（均为IVW方法结果的beta值）
 all_beta
 ## [1] -0.3785459
